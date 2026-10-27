@@ -1,0 +1,11 @@
+postprocessor:
+  _target_: edge_model_bench.detector.ssd.QnnSsd
+  boxes: boxes
+  scores: scores
+  labels: labels
+  # ResNet34-SSD1200 export: pixel xyxy, contiguous 0-79 class ids
+  box_format: xyxy
+  conf_threshold: 0.05
+  max_detections: 100
+  num_classes: 80
+  map_coco_categories: false

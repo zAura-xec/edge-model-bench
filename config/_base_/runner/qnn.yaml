@@ -1,0 +1,6 @@
+input_bin: qnn/model_compiled.bin
+
+runner:
+  _target_: edge_model_bench.runner.qnn.QnnRunner
+  bin_path: ${..input_bin}
+  initialize: true

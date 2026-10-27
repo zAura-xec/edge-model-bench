@@ -1,0 +1,14 @@
+# @package _global_
+#
+#   uv run python tools/pipeline.py config/pipeline/task/seg/qnn/int8/deeplabv3_plus_mobilenet.yaml
+
+defaults:
+  - /pipeline/task/seg/qnn/int8/task
+  - _self_
+
+model_name: deeplabv3_plus_mobilenet
+model_dir: deeplabv3_plus_mobilenet-onnx-float
+
+postprocess:
+  postprocessor:
+    _target_: edge_model_bench.segmenter.semantic.QnnDeepLabV3Plus

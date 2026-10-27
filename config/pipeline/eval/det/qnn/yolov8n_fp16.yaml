@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/det/qnn/task
+  - _self_
+
+model_name: yolov8n
+precision: fp16
+input_size: [640, 640]
+num_classes: 80
+
+postprocess:
+  postprocessor:
+    box_format: cxcywh

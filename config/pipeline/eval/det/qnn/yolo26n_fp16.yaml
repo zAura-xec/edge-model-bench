@@ -1,0 +1,12 @@
+# @package _global_
+#
+#   uv run python tools/pipeline.py config/pipeline/eval/det/qnn/yolo26n_fp16.yaml
+
+defaults:
+  - /pipeline/eval/det/qnn/task
+  - _self_
+
+model_name: yolo26n
+precision: fp16
+input_size: [640, 640]
+num_classes: 80

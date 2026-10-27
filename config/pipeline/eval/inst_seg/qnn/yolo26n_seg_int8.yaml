@@ -1,0 +1,8 @@
+# @package _global_
+defaults: [/pipeline/eval/inst_seg/qnn/task, _self_]
+model_name: yolo26n-seg
+precision: int8
+input_bin: ${work_dir}/qnn/${model_name}-split_compiled.bin
+postprocess:
+  postprocessor:
+    layout: split_standard

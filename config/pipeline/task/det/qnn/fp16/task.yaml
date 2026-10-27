@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/det/qnn/task
+  - _self_
+
+precision: fp16
+calibration: null
+
+conversion:
+  qnn_config:
+    conversion_options:
+      float_precision: 16
+      float_bias_precision: 16

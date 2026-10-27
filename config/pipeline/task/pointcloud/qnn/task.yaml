@@ -1,0 +1,75 @@
+# @package _global_
+
+defaults:
+  - /_base_/converter@conversion: qnn
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+model_name: pointnet
+model_root: ${benchmark_root}/onnx/bev/pointnet-onnx-float
+model_path: ${model_root}/pointnet.onnx
+dataset_root: ${benchmark_root}/dataset/ModelNet10
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+precision: fp16
+work_dir: ${work_root}/${model_name}_${precision}
+num_points: 1024
+validation_csv: ${dataset_root}/validation.csv
+
+calibration:
+  data_list: ${dataset_root}/calibration_512.txt
+  raw_output_dir: ${work_dir}/raw
+  input_list: ${work_dir}/input_list.txt
+  pipeline:
+    - _target_: edge_model_bench.dataset.pointcloud.LoadingPointCloud
+    - _target_: edge_model_bench.dataset.pointcloud.SamplePointCloud
+      num_points: ${num_points}
+      seed: 0
+    - _target_: edge_model_bench.dataset.pointcloud.NormalizePointCloud
+    - _target_: edge_model_bench.dataset.pointcloud.PointCloudToNCHW
+    - _target_: edge_model_bench.dataset.transform.SaveRaw
+      output_dir: ${...raw_output_dir}
+      input_list_path: ${...input_list}
+  dataset:
+    _target_: edge_model_bench.dataset.standard.StandardDataset
+    images: ${..data_list}
+    pipeline: ${..pipeline}
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.pointcloud.LoadingPointCloud
+  - _target_: edge_model_bench.dataset.pointcloud.SamplePointCloud
+    num_points: ${num_points}
+    seed: 0
+  - _target_: edge_model_bench.dataset.pointcloud.NormalizePointCloud
+  - _target_: edge_model_bench.dataset.pointcloud.PointCloudToNCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.pointcloud.ModelNet10
+  csv_path: ${validation_csv}
+  pipeline: ${validation_pipeline}
+
+conversion:
+  input_model: ${model_path}
+  output_dir: ${work_dir}/qnn
+  qnn_config:
+    model_name: ${model_name}
+
+runner:
+  _target_: edge_model_bench.runner.qnn.QnnRunner
+  _partial_: true
+  initialize: true
+
+postprocess:
+  _target_: edge_model_bench.segmenter.pointnet.QnnPointNet
+  class_logits: x
+
+evaluator:
+  _target_: edge_model_bench.evaluator.pointcloud.ModelNet10Evaluator
+  top_k: [1, 5]
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_task.ModelTask
+  dataset: ${validation_dataset}
+  converter: ${conversion.converter}
+  runner: ${runner}
+  postprocessor: ${postprocess}
+  evaluator: ${evaluator}

@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - /pipeline/task/inst_seg/qnn/fp16/task
+  - _self_
+model_name: yolov8n-seg

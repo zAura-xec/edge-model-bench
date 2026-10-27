@@ -1,0 +1,20 @@
+# @package _global_
+#
+# YOLO11n QNN int8: convert + COCO detect eval.
+# ONNX: ${benchmark_root}/onnx/det/yolo/yolo11n.onnx
+# outputs: boxes [1,4,8400], class_logits [1,80,8400]
+#
+#   uv run python tools/pipeline.py config/pipeline/task/det/qnn/int8/yolo11n.yaml
+
+defaults:
+  - /pipeline/task/det/qnn/int8/task
+  - _self_
+
+model_name: yolo11n
+input_size: [640, 640]
+num_classes: 80
+
+# simplified YOLO11 export is pixel cxcywh (not xyxy)
+postprocess:
+  postprocessor:
+    box_format: cxcywh

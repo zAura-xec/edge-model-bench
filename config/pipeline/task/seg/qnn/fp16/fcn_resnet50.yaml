@@ -1,0 +1,14 @@
+# @package _global_
+#
+#   uv run python tools/pipeline.py config/pipeline/task/seg/qnn/fp16/fcn_resnet50.yaml
+
+defaults:
+  - /pipeline/task/seg/qnn/fp16/task
+  - _self_
+
+model_name: fcn_resnet50
+model_dir: fcn_resnet50-onnx-float
+
+postprocess:
+  postprocessor:
+    _target_: edge_model_bench.segmenter.semantic.QnnFcnResNet50

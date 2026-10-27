@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/inst_seg/qnn/int8/entropy_task
+  - _self_
+
+model_name: yolo26n-seg
+
+conversion:
+  input_model: ${benchmark_root}/onnx/seg/yolo/${model_name}-split.onnx
+
+postprocess:
+  postprocessor:
+    layout: split_standard

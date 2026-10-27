@@ -1,0 +1,10 @@
+postprocessor:
+  _target_: edge_model_bench.detector.yolo.QnnYolo
+  boxes: boxes
+  class_conf: class_logits
+  # yolo26n export uses pixel xyxy; set cxcywh for some YOLOv8 simplified exports
+  box_format: xyxy
+  conf_threshold: 0.25
+  iou_threshold: 0.7
+  max_detections: 300
+  multi_label: false

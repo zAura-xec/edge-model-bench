@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/bev/qnn/task
+  - _self_
+
+model_name: bevdet
+model_type: bevdet
+precision: fp16
+image_size: [256, 704]

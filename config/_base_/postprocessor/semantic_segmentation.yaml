@@ -1,0 +1,4 @@
+postprocessor:
+  _target_: edge_model_bench.segmenter.semantic.QnnSemanticSegmenter
+  mask: mask
+  num_classes: ${num_classes}

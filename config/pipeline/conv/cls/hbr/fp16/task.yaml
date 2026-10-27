@@ -1,0 +1,15 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/cls/hbr/task
+  - _self_
+
+precision: fp16
+
+# FP16 可跳过校准数据；整网 float16。
+conversion:
+  hbr_config:
+    calibration_type: skip
+    quant_config:
+      model_config:
+        all_node_type: float16

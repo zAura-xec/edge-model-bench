@@ -1,0 +1,27 @@
+# @package _global_
+#
+# RF-DETR QNN int8: convert + COCO detect eval.
+# ONNX: ${benchmark_root}/onnx/det/rf_detr-onnx-float/rf_detr.onnx
+# outputs: boxes [1,300,4] xyxy, logits [1,300], classes [1,300] (COCO cat ids)
+#
+#   uv run python tools/pipeline.py config/pipeline/task/det/qnn/int8/rf_detr.yaml
+
+defaults:
+  - /pipeline/task/det/qnn/int8/task
+  - override /_base_/postprocessor@postprocess: detr
+  - _self_
+
+model_name: rf_detr
+input_size: [512, 512]
+num_classes: 80
+
+conversion:
+  input_model: ${benchmark_root}/onnx/det/rf_detr-onnx-float/rf_detr.onnx
+
+postprocess:
+  postprocessor:
+    input_size: ${input_size}
+    num_classes: ${num_classes}
+    conf_threshold: 0.5
+    max_detections: 300
+    map_coco_categories: true

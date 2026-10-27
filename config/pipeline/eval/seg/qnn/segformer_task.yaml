@@ -1,0 +1,56 @@
+# @package _global_
+#
+# Evaluate an existing compiled SegFormer-Base QNN model on ADE20K.
+
+defaults:
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+model_name: segformer_base
+input_size: [512, 512]
+precision: fp16
+num_classes: 150
+work_dir: ${work_root}/${model_name}_${precision}
+input_bin: ${work_dir}/qnn/${model_name}_compiled.bin
+ade20k_root: ${benchmark_root}/dataset/ADE20k
+validation_csv: ${ade20k_root}/validation_1000.csv
+save_result: true
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.ade20k.Ade20kSegmentation
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.qnn.QnnRunner
+  _partial_: true
+  initialize: true
+
+postprocess:
+  postprocessor:
+    _target_: edge_model_bench.segmenter.semantic.QnnSegFormer
+    logits: class_logits
+    num_classes: ${num_classes}
+
+evaluator:
+  _target_: edge_model_bench.evaluator.segmentation.Ade20kSegmentationEvaluator
+  ignore_index: 255
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_evaluator.ModelEvaluator
+  model: ${input_bin}
+  dataset: ${validation_dataset}
+  runner: ${runner}
+  postprocessor: ${postprocess.postprocessor}
+  evaluator: ${evaluator}

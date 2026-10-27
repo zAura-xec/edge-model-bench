@@ -1,0 +1,68 @@
+# @package _global_
+
+defaults:
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_MTNN_WORK_ROOT,./work/mtnn/inst_seg}
+model_name: yolo11n-seg
+input_size: [640, 640]
+mask_size: [160, 160]
+precision: int8
+num_classes: 80
+work_dir: ${work_root}/${model_name}_${precision}
+input_mtnn: ${work_dir}/mtnn/${model_name}_${precision}.mtnn
+validation_csv: ${benchmark_root}/dataset/COCO2017/segmentation/validation_1000.csv
+save_result: true
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.coco_segmentation.CocoInstanceSegmentation
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.mtnn.MtnnRunner
+  _partial_: true
+  initialize: true
+  output_mapping: false
+  runtime_env:
+    USE_IDE_LIB: '1'
+    DISABLE_IDE_DEBUG: '1'
+    MTNN_USE_IMAGE_PROCESS: '0'
+    VSIMULATOR_CONFIG: VIP9000NANOQI_PLUS_MP2_PID0X1000002A
+
+postprocessor:
+  _target_: edge_model_bench.segmenter.yolo.MtnnYoloSegmentation
+  boxes_index: 0
+  class_scores_index: 1
+  mask_coefficients_index: 2
+  prototypes_index: 3
+  num_classes: ${num_classes}
+  input_size: ${input_size}
+  conf_threshold: 0.001
+  iou_threshold: 0.7
+  mask_threshold: 0.5
+  max_detections: 100
+
+evaluator:
+  _target_: edge_model_bench.evaluator.instance_segmentation.InstanceSegmentationEvaluator
+  num_classes: ${num_classes}
+  mask_size: ${mask_size}
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_evaluator.ModelEvaluator
+  model: ${input_mtnn}
+  dataset: ${validation_dataset}
+  runner: ${runner}
+  postprocessor: ${postprocessor}
+  evaluator: ${evaluator}

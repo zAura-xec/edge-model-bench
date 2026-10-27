@@ -1,0 +1,28 @@
+# @package _global_
+#
+# DETR-ResNet50 QNN fp16 eval only.
+# BIN: ${benchmark_root}/work/qnn/detr_resnet50_fp16/qnn/detr_resnet50_compiled.bin
+#
+#   uv run python tools/pipeline.py config/pipeline/eval/det/qnn/detr_resnet50_fp16.yaml
+
+defaults:
+  - /pipeline/eval/det/qnn/task
+  - override /_base_/postprocessor@postprocess: detr
+  - _self_
+
+model_name: detr_resnet50
+precision: fp16
+input_size: [640, 640]
+num_classes: 80
+
+# Preconverted QNN artifacts on shared storage.
+work_dir: ${work_root}/${model_name}_${precision}
+input_bin: ${work_dir}/qnn/${model_name}_compiled.bin
+
+postprocess:
+  postprocessor:
+    input_size: ${input_size}
+    num_classes: ${num_classes}
+    conf_threshold: 0.5
+    max_detections: 100
+    map_coco_categories: true

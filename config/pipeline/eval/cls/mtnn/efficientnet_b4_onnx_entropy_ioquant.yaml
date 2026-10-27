@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/cls/mtnn/task
+  - _self_
+
+# Static Entropy-QDQ ONNX imported by MTC with both force-FP32 lists disabled.
+model_name: efficientnet_b4
+precision: int8_onnx_entropy
+input_size: [380, 380]
+input_mtnn: ${work_root}/efficientnet_b4_int8_onnx_entropy/mtnn/efficientnet_b4_entropy_qdq_ioquant.mtnn
+
+runner:
+  cast_outputs_to_float32: true

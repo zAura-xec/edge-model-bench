@@ -1,0 +1,26 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/cls/hbr/task
+  - /_base_/dataset@calibration: standard_npy
+  - _self_
+
+precision: int8
+
+# 校准：ImageNet 列表 → pipeline 预处理 → SaveNpy 到 work_dir/npy
+calibration:
+  data_list: ${benchmark_root}/dataset/ImageNet-1K/train_images.txt
+  raw_output_dir: ${work_dir}/npy
+  image_size: [224, 224]
+
+conversion:
+  hbr_config:
+    cal_data_dir: ${work_dir}/npy
+    calibration_type: kl
+    quant_config:
+      model_config:
+        all_node_type: int8
+
+# ModelConverter 在 convert 前可先 dump 校准数据
+pipeline:
+  calibration_dataset: ${calibration.dataset}

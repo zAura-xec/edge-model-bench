@@ -1,0 +1,19 @@
+input_model: model.onnx
+output_dir: mtnn
+
+mtnn_config:
+  _target_: edge_model_bench.converter.mtnn.MtnnConvertConfig
+  onnx_path: ${..input_model}
+  output_dir: ${..output_dir}
+  # MTC writes its native result under this toolkit directory before the
+  # converter copies it to output_dir/<Name>.mtnn.
+  mtc_output_root: ${oc.env:MTNN_MTC_OUTPUT_ROOT,/opt/m1000-mtc-toolkit/bin/baselib/data/net_data/onnx}
+  force_fp32input_list: true
+  force_fp32output_list: true
+  perf_collect_enable: true
+  test_enable: true
+  use_single_core: true
+
+converter:
+  _target_: edge_model_bench.converter.mtnn.MtnnPipeline
+  config: ${..mtnn_config}

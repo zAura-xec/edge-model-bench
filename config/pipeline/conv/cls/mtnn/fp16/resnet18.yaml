@@ -1,0 +1,9 @@
+# @package _global_
+#
+# uv run python tools/pipeline.py config/pipeline/conv/cls/mtnn/fp16/resnet18.yaml --stage convert
+
+defaults:
+  - /pipeline/conv/cls/mtnn/fp16/task
+  - _self_
+
+model_name: resnet18

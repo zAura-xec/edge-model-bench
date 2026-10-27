@@ -1,0 +1,31 @@
+# @package _global_
+#
+# Run on an RDK S board:
+#   python3 tools/pipeline.py config/pipeline/profile/hbr/multi_model.yaml
+# Override paths or benchmark counts when needed:
+#   python3 tools/pipeline.py config/pipeline/profile/hbr/multi_model.yaml \
+#     'model_paths=[/path/a.hbm,/path/b.hbm]' warmup=10 runs=200
+
+defaults:
+  - /_base_/profiler@profiling: hbr
+  - _self_
+
+model_root: ${oc.env:HBR_MODEL_ROOT,./work/hbr/cls}
+model_paths:
+  - ${model_root}/resnet18_fp16/hbr/model_output/resnet18_fp16.hbm
+  - ${model_root}/mobilenet_v2_fp16/hbr/model_output/mobilenet_v2_fp16.hbm
+
+priority: 0
+bpu_cores: [0]
+seed: 42
+warmup: 5
+runs: 100
+
+work_dir: ${oc.env:HBR_PROFILE_WORK_DIR,./work/hbr/profile/multi_model}
+save_result: true
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_profiler.ModelProfiler
+  profiler: ${profiling.profiler}
+  warmup: ${warmup}
+  runs: ${runs}

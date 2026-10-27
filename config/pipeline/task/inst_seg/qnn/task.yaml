@@ -1,0 +1,61 @@
+# @package _global_
+# YOLO instance segmentation: convert, infer, and evaluate on COCO val subset.
+
+defaults:
+  - /_base_/dataset@calibration: standard
+  - /_base_/converter@conversion: qnn
+  - /_base_/postprocessor@postprocess: yolo_segmentation
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+model_name: yolov8n-seg
+input_size: [640, 640]
+mask_size: [160, 160]
+precision: fp16
+num_classes: 80
+work_dir: ${work_root}/${model_name}_${precision}
+validation_csv: ${benchmark_root}/dataset/COCO2017/segmentation/validation_1000.csv
+
+calibration:
+  data_list: ${benchmark_root}/dataset/COCO2017/calibration_512.txt
+  raw_output_dir: ${work_dir}/raw
+  image_size: ${input_size}
+
+conversion:
+  input_model: ${benchmark_root}/onnx/seg/yolo/${model_name}.onnx
+  output_dir: ${work_dir}/qnn
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.coco_segmentation.CocoInstanceSegmentation
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.qnn.QnnRunner
+  _partial_: true
+  initialize: true
+
+evaluator:
+  _target_: edge_model_bench.evaluator.instance_segmentation.InstanceSegmentationEvaluator
+  num_classes: ${num_classes}
+  mask_size: ${mask_size}
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_task.ModelTask
+  dataset: ${validation_dataset}
+  converter: ${conversion.converter}
+  runner: ${runner}
+  postprocessor: ${postprocess.postprocessor}
+  evaluator: ${evaluator}
+  calibration_dataset: null

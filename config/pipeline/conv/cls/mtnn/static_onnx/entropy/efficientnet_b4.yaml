@@ -1,0 +1,18 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/cls/mtnn/static_onnx/task
+  - _self_
+
+model_name: efficientnet_b4
+input_size: [380, 380]
+
+calibration:
+  image_size: ${input_size}
+  max_samples: 16
+
+conversion:
+  converter:
+    # Full 512-sample Entropy collection exceeds the board's 31 GiB RAM for
+    # EfficientNet-B4; retain a deterministic prefix from calibration_512.txt.
+    max_calibration_samples: 16

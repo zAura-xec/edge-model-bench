@@ -1,0 +1,9 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/cls/mtnn/task
+  - _self_
+
+model_name: efficientnet_b4
+precision: int8_onnx_entropy
+input_size: [380, 380]

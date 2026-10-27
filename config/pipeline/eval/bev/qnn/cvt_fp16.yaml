@@ -1,0 +1,16 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/bev/qnn/task
+  - _self_
+
+model_name: cvt
+model_type: cvt
+precision: fp16
+image_size: [224, 480]
+
+postprocess:
+  _target_: edge_model_bench.detector.bev.QnnCVT
+
+evaluator:
+  _target_: edge_model_bench.evaluator.bev.NuScenesCvtBevEvaluator

@@ -1,0 +1,24 @@
+# @package _global_
+
+defaults:
+  - /_base_/converter@conversion: mtnn
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_MTNN_WORK_ROOT,./work/mtnn/inst_seg}
+model_name: yolo11n-seg
+precision: int8
+input_size: [640, 640]
+work_dir: ${work_root}/${model_name}_${precision}
+save_result: false
+
+conversion:
+  input_model: ${benchmark_root}/onnx/seg/yolo/${model_name}-split.onnx
+  output_dir: ${work_dir}/mtnn
+  mtnn_config:
+    name: ${model_name}_${precision}
+    artifact_path: ${work_dir}/mtnn/${model_name}_${precision}.mtnn
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_converter.ModelConverter
+  converter: ${conversion.converter}

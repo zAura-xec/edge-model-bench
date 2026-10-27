@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a reproducible problem without sensitive data.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include expected behavior and the actual error.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Commands and sanitized config; use synthetic or public data.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python, package version/commit, OS, backend, SDK, device, model layout and dtype.
+    validations:
+      required: true

@@ -1,0 +1,15 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/inst_seg/qnn/int8/task
+  - _self_
+
+precision: int8_mse
+
+conversion:
+  converter:
+    onnx_to_dlc:
+      calibration_config:
+        param_calibration_method: mse
+        act_calibration_method: mse
+        per_channel_quantization: true

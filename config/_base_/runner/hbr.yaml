@@ -1,0 +1,7 @@
+input_hbm: hbr/model.hbm
+
+runner:
+  _target_: edge_model_bench.runner.hbr.HbrRunner
+  hbm_path: ${..input_hbm}
+  priority: 0
+  bpu_cores: [0]

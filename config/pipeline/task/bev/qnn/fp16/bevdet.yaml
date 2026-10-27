@@ -1,0 +1,17 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/bev/qnn/task
+  - _self_
+
+model_name: bevdet
+model_type: bevdet
+model_path: ${benchmark_root}/onnx/bev/bevdet-onnx-float/bevdet.onnx
+image_size: [256, 704]
+precision: fp16
+
+conversion:
+  qnn_config:
+    conversion_options:
+      float_precision: 16
+      float_bias_precision: 16

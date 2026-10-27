@@ -1,0 +1,7 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/seg/qnn/segformer_task
+  - _self_
+
+precision: int8

@@ -1,0 +1,55 @@
+# @package _global_
+
+defaults:
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_MTNN_WORK_ROOT,./work/mtnn/cls}
+model_name: resnet18
+input_size: [224, 224]
+precision: int8
+work_dir: ${work_root}/${model_name}_${precision}
+input_mtnn: ${work_dir}/mtnn/${model_name}_${precision}.mtnn
+validation_csv: ${benchmark_root}/dataset/ImageNet-1K/validation_1000.csv
+save_result: true
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.imagenet1k.ImageNet1K
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.mtnn.MtnnRunner
+  _partial_: true
+  initialize: true
+  output_mapping: false
+  runtime_env:
+    USE_IDE_LIB: '1'
+    DISABLE_IDE_DEBUG: '1'
+    MTNN_USE_IMAGE_PROCESS: '0'
+    VSIMULATOR_CONFIG: VIP9000NANOQI_PLUS_MP2_PID0X1000002A
+
+evaluator:
+  _target_: edge_model_bench.evaluator.cls_task.ClsTaskEvaluator
+
+postprocessor:
+  _target_: edge_model_bench.classifier.OnnxClassifier
+  output_index: 0
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_evaluator.ModelEvaluator
+  model: ${input_mtnn}
+  dataset: ${validation_dataset}
+  runner: ${runner}
+  postprocessor: ${postprocessor}
+  evaluator: ${evaluator}

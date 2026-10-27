@@ -1,0 +1,60 @@
+# @package _global_
+
+defaults:
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_MTNN_WORK_ROOT,./work/mtnn/det}
+model_name: yolov8n
+input_size: [640, 640]
+precision: int8
+num_classes: 80
+work_dir: ${work_root}/${model_name}_${precision}
+input_mtnn: ${work_dir}/mtnn/${model_name}_${precision}.mtnn
+validation_csv: ${benchmark_root}/dataset/COCO2017/validation_1000.csv
+save_result: true
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.coco.Coco
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.mtnn.MtnnRunner
+  _partial_: true
+  initialize: true
+  output_mapping: false
+  runtime_env:
+    USE_IDE_LIB: '1'
+    DISABLE_IDE_DEBUG: '1'
+    MTNN_USE_IMAGE_PROCESS: '0'
+    VSIMULATOR_CONFIG: VIP9000NANOQI_PLUS_MP2_PID0X1000002A
+
+postprocessor:
+  _target_: edge_model_bench.detector.yolo.MtnnYolo
+  boxes_index: 0
+  class_conf_index: 1
+  box_format: cxcywh
+
+evaluator:
+  _target_: edge_model_bench.evaluator.detection.DetectionEvaluator
+  input_size: ${input_size}
+  num_classes: ${num_classes}
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_evaluator.ModelEvaluator
+  model: ${input_mtnn}
+  dataset: ${validation_dataset}
+  runner: ${runner}
+  postprocessor: ${postprocessor}
+  evaluator: ${evaluator}

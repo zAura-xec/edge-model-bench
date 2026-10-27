@@ -1,0 +1,18 @@
+# @package _global_
+#
+# ResNet34-SSD1200 QNN int8 conversion only.
+# ONNX: ${benchmark_root}/onnx/det/resnet34_ssd1200-onnx-float/resnet34_ssd1200.onnx
+#
+#   uv run python tools/pipeline.py config/pipeline/conv/det/qnn/int8/resnet34_ssd1200.yaml
+
+defaults:
+  - /pipeline/conv/det/qnn/int8/task
+  - _self_
+
+model_name: resnet34_ssd1200
+
+calibration:
+  image_size: [1200, 1200]
+
+conversion:
+  input_model: ${benchmark_root}/onnx/det/resnet34_ssd1200-onnx-float/resnet34_ssd1200.onnx

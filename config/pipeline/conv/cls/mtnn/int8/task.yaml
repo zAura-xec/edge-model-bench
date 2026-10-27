@@ -1,0 +1,33 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/cls/mtnn/task
+  - /_base_/dataset@calibration: standard_mtnn_npy
+  - _self_
+
+precision: int8
+
+# First generate calibration .npy files with --stage calibrate; convert then
+# passes their ordered list to MTC through input_dataset_list.  This matches
+# the working MTC flow used on the M1000 board.
+calibration:
+  data_list: ${benchmark_root}/dataset/ImageNet-1K/train_images.txt
+  raw_output_dir: ${work_dir}/npy
+  image_size: [224, 224]
+
+conversion:
+  mtnn_config:
+    # Match the board-side MTC baseline: runtime receives the quantized input
+    # tensor representation rather than forcing float32 I/O.
+    force_fp32input_list: false
+    force_fp32output_list: false
+    quant_type: int8
+    quantizer: asymmetric_affine
+    quant_config:
+      algorithm: normal
+      iterations: 10
+    input_dataset_list:
+      - ${work_dir}/npy/calib_list.txt
+
+pipeline:
+  calibration_dataset: ${calibration.dataset}

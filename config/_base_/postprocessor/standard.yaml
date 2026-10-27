@@ -1,0 +1,3 @@
+postprocessor:
+  _target_: edge_model_bench.classifier.QnnClassifier
+  class_logits: class_logits

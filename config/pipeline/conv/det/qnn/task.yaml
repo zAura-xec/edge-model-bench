@@ -1,0 +1,25 @@
+# @package _global_
+#
+# Detection-only conversion pipeline (QNN).
+# Example:
+#   uv run python tools/pipeline.py config/pipeline/conv/det/qnn/fp16/yolov8n.yaml
+
+defaults:
+  - /_base_/converter@conversion: qnn
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+model_name: yolov8n
+precision: fp16
+work_dir: ${work_root}/${model_name}_${precision}
+save_result: false
+
+conversion:
+  # Expected ONNX outputs: boxes [1, 4, N], class_logits [1, C, N].
+  input_model: ${benchmark_root}/onnx/det/yolo/${model_name}.onnx
+  output_dir: ${work_dir}/qnn
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_converter.ModelConverter
+  converter: ${conversion.converter}

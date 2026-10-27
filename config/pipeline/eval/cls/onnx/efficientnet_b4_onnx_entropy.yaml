@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/cls/onnx/task
+  - _self_
+
+# Baseline for the same full Entropy-QDQ model imported by the MTNN pipeline.
+model_name: efficientnet_b4
+input_size: [380, 380]
+model_path: ${oc.env:MTNN_STATIC_ONNX,./work/efficientnet_b4_int8_onnx_entropy/onnx/efficientnet_b4_static_quantized.onnx}
+save_result: true

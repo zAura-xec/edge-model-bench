@@ -1,0 +1,23 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/bev/qnn/task
+  - _self_
+
+model_name: cvt
+model_type: cvt
+model_path: ${benchmark_root}/onnx/bev/cvt-onnx-float/cvt.onnx
+image_size: [224, 480]
+precision: fp16
+
+conversion:
+  qnn_config:
+    conversion_options:
+      float_precision: 16
+      float_bias_precision: 16
+
+postprocess:
+  _target_: edge_model_bench.detector.bev.QnnCVT
+
+evaluator:
+  _target_: edge_model_bench.evaluator.bev.NuScenesCvtBevEvaluator

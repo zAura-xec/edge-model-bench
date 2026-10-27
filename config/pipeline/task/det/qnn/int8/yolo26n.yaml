@@ -1,0 +1,15 @@
+# @package _global_
+#
+# YOLO26n QNN int8: convert + COCO detect eval.
+# ONNX: ${benchmark_root}/onnx/det/yolo/yolo26n.onnx
+# outputs: boxes [1,4,8400], class_logits [1,80,8400]
+#
+#   uv run python tools/pipeline.py config/pipeline/task/det/qnn/int8/yolo26n.yaml
+
+defaults:
+  - /pipeline/task/det/qnn/int8/task
+  - _self_
+
+model_name: yolo26n
+input_size: [640, 640]
+num_classes: 80

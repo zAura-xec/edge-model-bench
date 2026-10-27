@@ -1,0 +1,29 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/cls/qnn/task
+  - /_base_/dataset@calibration: standard
+  - _self_
+
+precision: int8
+
+calibration:
+  data_list: ${benchmark_root}/dataset/ImageNet-1K/train_images.txt
+  raw_output_dir: ${work_dir}/raw
+  image_size: [224, 224]
+
+conversion:
+  # Path consumed by QAIRT CalibrationConfig after raw dump.
+  calibration_dataset: ${work_dir}/input_list.txt
+  converter:
+    onnx_to_dlc:
+      calibration_config:
+        _target_: qairt.api.converter.converter_config.CalibrationConfig
+        dataset: ${....calibration_dataset}
+        use_native_input_files: true
+        weights_precision: 8
+        act_precision: 8
+
+# Dump calibration raws + input_list.txt before convert.
+pipeline:
+  calibration_dataset: ${calibration.dataset}

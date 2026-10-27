@@ -1,0 +1,26 @@
+input_model: model.onnx
+output_dir: hbr
+
+# 预处理（resize/normalize 等）由 dataset.pipeline 完成，此处只接收已处理的 featuremap。
+hbr_config:
+  _target_: edge_model_bench.converter.hbr.HbrConvertConfig
+  onnx_path: ${..input_model}
+  output_dir: ${..output_dir}
+  # HBR 4.7.5 最高支持 opset 20；高版本模型会生成独立的降级副本。
+  target_opset: 20
+  march: nash-m
+  input_type_rt: featuremap
+  input_type_train: featuremap
+  input_layout_train: NCHW
+  calibration_type: kl
+  optimize_level: O2
+  compile_mode: latency
+  core_num: 1
+  debug: false
+  # quant_config:
+  #   model_config:
+  #     all_node_type: float16
+
+converter:
+  _target_: edge_model_bench.converter.hbr.HbrPipeline
+  config: ${..hbr_config}

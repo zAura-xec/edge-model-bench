@@ -1,0 +1,18 @@
+# @package _global_
+#
+# RF-DETR QNN int8 conversion only.
+# ONNX: ${benchmark_root}/onnx/det/rf_detr-onnx-float/rf_detr.onnx
+#
+#   uv run python tools/pipeline.py config/pipeline/conv/det/qnn/int8/rf_detr.yaml
+
+defaults:
+  - /pipeline/conv/det/qnn/int8/task
+  - _self_
+
+model_name: rf_detr
+
+calibration:
+  image_size: [512, 512]
+
+conversion:
+  input_model: ${benchmark_root}/onnx/det/rf_detr-onnx-float/rf_detr.onnx

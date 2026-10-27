@@ -1,0 +1,67 @@
+# @package _global_
+#
+# Convert, run, and evaluate SegFormer-Base on an ADE20K ADE150 subset.
+
+defaults:
+  - /_base_/dataset@calibration: standard
+  - /_base_/converter@conversion: qnn
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+model_name: segformer_base
+model_dir: segformer_base-onnx-float
+input_size: [512, 512]
+precision: fp16
+num_classes: 150
+work_dir: ${work_root}/${model_name}_${precision}
+ade20k_root: ${benchmark_root}/dataset/ADE20k
+validation_csv: ${ade20k_root}/validation_1000.csv
+
+conversion:
+  input_model: ${benchmark_root}/onnx/seg/${model_dir}/${model_name}.onnx
+  output_dir: ${work_dir}/qnn
+
+calibration:
+  data_list: ${ade20k_root}/calibration_512.txt
+  raw_output_dir: ${work_dir}/raw
+  image_size: ${input_size}
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.ade20k.Ade20kSegmentation
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.qnn.QnnRunner
+  _partial_: true
+  initialize: true
+
+postprocess:
+  postprocessor:
+    _target_: edge_model_bench.segmenter.semantic.QnnSegFormer
+    logits: class_logits
+    num_classes: ${num_classes}
+
+evaluator:
+  _target_: edge_model_bench.evaluator.segmentation.Ade20kSegmentationEvaluator
+  ignore_index: 255
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_task.ModelTask
+  dataset: ${validation_dataset}
+  converter: ${conversion.converter}
+  runner: ${runner}
+  postprocessor: ${postprocess.postprocessor}
+  evaluator: ${evaluator}
+  calibration_dataset: null

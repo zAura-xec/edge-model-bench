@@ -1,0 +1,11 @@
+postprocessor:
+  _target_: edge_model_bench.segmenter.yolo.QnnYoloSegmentation
+  prediction: output0
+  prototypes: output1
+  num_classes: ${num_classes}
+  layout: standard
+  conf_threshold: 0.001
+  iou_threshold: 0.7
+  mask_threshold: 0.5
+  max_detections: 100
+  input_size: ${input_size}

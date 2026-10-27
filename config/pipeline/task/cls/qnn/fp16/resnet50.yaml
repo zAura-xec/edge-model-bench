@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/cls/qnn/fp16/task
+  - _self_
+
+model_name: resnet50
+input_size: [224, 224]

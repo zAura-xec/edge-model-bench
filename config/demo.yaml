@@ -1,0 +1,29 @@
+# @package _global_
+# Synthetic plumbing check; not a meaningful model accuracy benchmark.
+demo_root: ./work/demo
+work_dir: ${demo_root}/evaluation
+model_path: ${demo_root}/model.onnx
+warmup: 2
+pipeline:
+  _target_: edge_model_bench.pipeline.ModelTask
+  model: ${model_path}
+  warmup: ${warmup}
+  dataset:
+    _target_: edge_model_bench.dataset.ImageNet1K
+    csv_path: ${demo_root}/validation.csv
+    pipeline:
+      - _target_: edge_model_bench.dataset.LoadingImage
+      - _target_: edge_model_bench.dataset.BGR2RGB
+      - _target_: edge_model_bench.dataset.Normalize
+        mean: 0
+        std: 255
+      - _target_: edge_model_bench.dataset.HWC2NCHW
+  runner:
+    _target_: edge_model_bench.runner.OnnxRunner
+    _partial_: true
+    providers: [CPUExecutionProvider]
+  postprocessor:
+    _target_: edge_model_bench.classifier.OnnxClassifier
+  evaluator:
+    _target_: edge_model_bench.evaluator.ClsTaskEvaluator
+    top_k: [1, 3]

@@ -1,0 +1,11 @@
+# @package _global_
+defaults:
+  - /pipeline/task/inst_seg/qnn/task
+  - _self_
+
+precision: fp16
+conversion:
+  qnn_config:
+    conversion_options:
+      float_precision: 16
+      float_bias_precision: 16

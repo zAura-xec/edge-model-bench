@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/inst_seg/mtnn/task
+  - _self_
+
+model_name: yolo11n-seg
+precision: int8

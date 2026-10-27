@@ -1,0 +1,4 @@
+# @package _global_
+defaults: [/pipeline/eval/inst_seg/qnn/task, _self_]
+model_name: yolov8n-seg
+precision: fp16

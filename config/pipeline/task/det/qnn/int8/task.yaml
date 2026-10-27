@@ -1,0 +1,21 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/det/qnn/task
+  - _self_
+
+precision: int8
+
+conversion:
+  calibration_dataset: ${work_dir}/input_list.txt
+  converter:
+    onnx_to_dlc:
+      calibration_config:
+        _target_: qairt.api.converter.converter_config.CalibrationConfig
+        dataset: ${....calibration_dataset}
+        use_native_input_files: true
+        weights_precision: 8
+        act_precision: 8
+
+pipeline:
+  calibration_dataset: ${calibration.dataset}

@@ -1,0 +1,7 @@
+# HBR multi-model profiler instantiated by Hydra on an RDK S board.
+profiler:
+  _target_: edge_model_bench.profiler.hbr.HbrMultiModelProfiler
+  model_paths: ${model_paths}
+  priority: ${priority}
+  bpu_cores: ${bpu_cores}
+  seed: ${seed}

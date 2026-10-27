@@ -1,0 +1,27 @@
+# @package _global_
+#
+# DETR-ResNet50 QNN fp16: convert + COCO detect eval.
+# ONNX: ${benchmark_root}/onnx/det/detr_resnet50-onnx-float/detr_resnet50.onnx
+# outputs: boxes [1,100,4] xyxy, logits [1,100], classes [1,100] (COCO cat ids)
+#
+#   uv run python tools/pipeline.py config/pipeline/task/det/qnn/fp16/detr_resnet50.yaml
+
+defaults:
+  - /pipeline/task/det/qnn/fp16/task
+  - override /_base_/postprocessor@postprocess: detr
+  - _self_
+
+model_name: detr_resnet50
+input_size: [640, 640]
+num_classes: 80
+
+conversion:
+  input_model: ${benchmark_root}/onnx/det/detr_resnet50-onnx-float/detr_resnet50.onnx
+
+postprocess:
+  postprocessor:
+    input_size: ${input_size}
+    num_classes: ${num_classes}
+    conf_threshold: 0.5
+    max_detections: 100
+    map_coco_categories: true

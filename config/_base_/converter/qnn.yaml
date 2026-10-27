@@ -1,0 +1,19 @@
+input_model: model.onnx
+output_dir: qnn
+
+qnn_config:
+  _target_: edge_model_bench.converter.qnn.QnnConfig
+  onnx_path: ${..input_model}
+  output_dir: ${..output_dir}
+  chipset: QCS9075
+  conversion_options:
+    preserve_io_datatype: all
+
+converter:
+  _target_: edge_model_bench.converter.qnn.QnnPipeline
+  onnx_to_dlc:
+    _target_: edge_model_bench.converter.qnn.OnnxToDlc
+    config: ${...qnn_config}
+  dlc_to_bin:
+    _target_: edge_model_bench.converter.qnn.DlcToBin
+    config: ${...qnn_config}

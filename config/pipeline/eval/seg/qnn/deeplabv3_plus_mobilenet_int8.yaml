@@ -1,0 +1,12 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/seg/qnn/task
+  - _self_
+
+model_name: deeplabv3_plus_mobilenet
+precision: int8
+
+postprocess:
+  postprocessor:
+    _target_: edge_model_bench.segmenter.semantic.QnnDeepLabV3Plus

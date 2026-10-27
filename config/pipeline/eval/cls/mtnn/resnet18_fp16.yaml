@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/cls/mtnn/task
+  - _self_
+
+model_name: resnet18
+precision: fp16

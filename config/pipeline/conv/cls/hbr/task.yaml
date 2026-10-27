@@ -1,0 +1,29 @@
+# @package _global_
+#
+# Classification conversion pipeline (Horizon OE / hb_compile).
+# Example:
+#   uv run python tools/pipeline.py config/pipeline/conv/cls/hbr/fp16/resnet18.yaml --stage convert
+#   uv run python tools/pipeline.py config/pipeline/conv/cls/hbr/int8/resnet18.yaml --stage calibrate
+#   uv run python tools/pipeline.py config/pipeline/conv/cls/hbr/int8/resnet18.yaml --stage convert
+
+defaults:
+  - /_base_/converter@conversion: hbr
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+model_name: resnet18
+precision: fp16
+work_dir: ${work_root}/${model_name}_${precision}
+save_result: false
+
+conversion:
+  input_model: ${benchmark_root}/onnx/cls/${model_name}-onnx-float/${model_name}.onnx
+  output_dir: ${work_dir}/hbr
+  hbr_config:
+    model_name: ${model_name}
+    output_model_file_prefix: ${model_name}_${precision}
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_converter.ModelConverter
+  converter: ${conversion.converter}

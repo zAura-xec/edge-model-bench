@@ -1,0 +1,21 @@
+# Calibration dump for Horizon OE / hb_compile (expects .npy under cal_data_dir).
+data_list: data.txt
+raw_output_dir: npy
+image_size: [224, 224]
+
+pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${...image_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+  - _target_: edge_model_bench.dataset.transform.SaveNpy
+    output_dir: ${...raw_output_dir}
+
+dataset:
+  _target_: edge_model_bench.dataset.standard.StandardDataset
+  images: ${..data_list}
+  pipeline: ${..pipeline}

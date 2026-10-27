@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - /pipeline/eval/cls/qnn/task
+  - _self_
+
+model_name: swin_base
+input_size: [224, 224]

@@ -1,0 +1,11 @@
+input_mtnn: mtnn/model.mtnn
+
+runner:
+  _target_: edge_model_bench.runner.mtnn.MtnnRunner
+  model_path: ${..input_mtnn}
+  initialize: true
+  runtime_env:
+    USE_IDE_LIB: '1'
+    DISABLE_IDE_DEBUG: '1'
+    MTNN_USE_IMAGE_PROCESS: '0'
+    VSIMULATOR_CONFIG: VIP9000NANOQI_PLUS_MP2_PID0X1000002A

@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/cls/onnx/task
+  - _self_
+
+model_name: mobilenet_v2
+input_size: [224, 224]

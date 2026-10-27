@@ -1,0 +1,51 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/cls/mtnn/task
+  - /_base_/dataset@calibration: standard_mtnn_npy
+  - _self_
+
+precision: int8_onnx_entropy
+static_onnx_model: ${work_dir}/onnx/${model_name}_static_quantized.onnx
+
+calibration:
+  data_list: ${benchmark_root}/dataset/ImageNet-1K/calibration_512.txt
+  raw_output_dir: ${work_dir}/npy
+  image_size: [224, 224]
+
+conversion:
+  calibration_list: ${work_dir}/npy/calib_list.txt
+  calibration_input: ${work_dir}/npy/000000.npy
+  mtnn_config:
+    output_dir: ${..output_dir}
+    name: ${model_name}_${precision}
+    artifact_path: ${work_dir}/mtnn/${model_name}_${precision}.mtnn
+    force_fp32input_list: true
+    force_fp32output_list: true
+    input_file_list:
+      - ${conversion.calibration_input}
+    perf_collect_enable: true
+    test_enable: true
+    use_single_core: true
+    mtc_output_root: ${oc.env:MTNN_MTC_OUTPUT_ROOT,/opt/m1000-mtc-toolkit/bin/baselib/data/net_data/onnx}
+  converter:
+    _target_: edge_model_bench.converter.static_mtnn.StaticOnnxMtnnPipeline
+    input_model: ${..input_model}
+    static_model_path: ${...static_onnx_model}
+    calibration_list: ${..calibration_list}
+    # Entropy calibration retains activation distributions.  Models with many
+    # feature maps can set this below the source list length for board memory.
+    max_calibration_samples: null
+    # Chunked collect_data(): each call merges activations into histograms and
+    # frees intermediate tensors.  Peak memory scales with chunk size, not the
+    # full calibration set.  null = one chunk covering all samples.
+    calib_chunk_size: 8
+    calibrate_method: Entropy
+    activation_type: QInt8
+    weight_type: QInt8
+    quant_format: QDQ
+    op_types_to_quantize: [Conv, MatMul, Add, Mul, Sigmoid, GlobalAveragePool]
+    mtnn_config: ${..mtnn_config}
+
+pipeline:
+  calibration_dataset: ${calibration.dataset}

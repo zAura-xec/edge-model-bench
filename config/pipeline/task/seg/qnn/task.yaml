@@ -1,0 +1,87 @@
+# @package _global_
+#
+# Convert, run, and evaluate direct-mask semantic-segmentation models on VOC2012.
+
+defaults:
+  - /_base_/dataset@calibration: standard
+  - /_base_/converter@conversion: qnn
+  - /_base_/postprocessor@postprocess: semantic_segmentation
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+model_name: deeplabv3_plus_mobilenet
+model_dir: deeplabv3_plus_mobilenet-onnx-float
+input_size: [520, 520]
+precision: fp16
+num_classes: 21
+work_dir: ${work_root}/${model_name}_${precision}
+voc_root: ${benchmark_root}/dataset/VOCdevkit
+validation_csv: ${voc_root}/validation_1000.csv
+
+voc_classes:
+  - background
+  - aeroplane
+  - bicycle
+  - bird
+  - boat
+  - bottle
+  - bus
+  - car
+  - cat
+  - chair
+  - cow
+  - diningtable
+  - dog
+  - horse
+  - motorbike
+  - person
+  - pottedplant
+  - sheep
+  - sofa
+  - train
+  - tvmonitor
+
+conversion:
+  input_model: ${benchmark_root}/onnx/seg/${model_dir}/${model_name}.onnx
+  output_dir: ${work_dir}/qnn
+
+calibration:
+  data_list: ${voc_root}/calibration_512.txt
+  raw_output_dir: ${work_dir}/raw
+  image_size: ${input_size}
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.voc.VocSegmentation
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.qnn.QnnRunner
+  _partial_: true
+  initialize: true
+
+evaluator:
+  _target_: edge_model_bench.evaluator.segmentation.SemanticSegmentationEvaluator
+  num_classes: ${num_classes}
+  ignore_index: 255
+  class_names: ${voc_classes}
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_task.ModelTask
+  dataset: ${validation_dataset}
+  converter: ${conversion.converter}
+  runner: ${runner}
+  postprocessor: ${postprocess.postprocessor}
+  evaluator: ${evaluator}
+  calibration_dataset: null

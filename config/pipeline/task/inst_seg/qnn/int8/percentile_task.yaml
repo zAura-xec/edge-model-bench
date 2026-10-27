@@ -1,0 +1,16 @@
+# @package _global_
+
+defaults:
+  - /pipeline/task/inst_seg/qnn/int8/task
+  - _self_
+
+precision: int8_percentile
+
+conversion:
+  converter:
+    onnx_to_dlc:
+      calibration_config:
+        param_calibration_method: percentile
+        act_calibration_method: percentile
+        percentile_calibration_value: 99.99
+        per_channel_quantization: true

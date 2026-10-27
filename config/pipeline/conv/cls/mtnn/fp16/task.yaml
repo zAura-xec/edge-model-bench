@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/cls/mtnn/task
+  - _self_
+
+precision: fp16
+
+# The model-zoo uses INT16 dynamic-fixed-point for this FP16 benchmark label.
+conversion:
+  mtnn_config:
+    quant_type: int16
+    quantizer: dynamic_fixed_point
+    require_calibration: false

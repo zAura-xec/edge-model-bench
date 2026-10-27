@@ -1,0 +1,14 @@
+# @package _global_
+#
+#   uv run python tools/pipeline.py config/pipeline/eval/seg/qnn/deeplabv3_plus_mobilenet_fp16.yaml
+
+defaults:
+  - /pipeline/eval/seg/qnn/task
+  - _self_
+
+model_name: deeplabv3_plus_mobilenet
+precision: fp16
+
+postprocess:
+  postprocessor:
+    _target_: edge_model_bench.segmenter.semantic.QnnDeepLabV3Plus

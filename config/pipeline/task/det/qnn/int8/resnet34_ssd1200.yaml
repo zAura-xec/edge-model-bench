@@ -1,0 +1,27 @@
+# @package _global_
+#
+# ResNet34-SSD1200 QNN int8: convert + COCO detect eval.
+# ONNX: ${benchmark_root}/onnx/det/resnet34_ssd1200-onnx-float/resnet34_ssd1200.onnx
+# outputs: boxes [1,92,4] xyxy, scores [1,92], labels [1,92] (contiguous 0-79)
+#
+#   uv run python tools/pipeline.py config/pipeline/task/det/qnn/int8/resnet34_ssd1200.yaml
+
+defaults:
+  - /pipeline/task/det/qnn/int8/task
+  - override /_base_/postprocessor@postprocess: ssd
+  - _self_
+
+model_name: resnet34_ssd1200
+input_size: [1200, 1200]
+num_classes: 80
+
+conversion:
+  input_model: ${benchmark_root}/onnx/det/resnet34_ssd1200-onnx-float/resnet34_ssd1200.onnx
+
+postprocess:
+  postprocessor:
+    input_size: ${input_size}
+    num_classes: ${num_classes}
+    conf_threshold: 0.05
+    max_detections: 100
+    map_coco_categories: false

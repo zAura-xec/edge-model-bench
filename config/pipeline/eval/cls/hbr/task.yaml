@@ -1,0 +1,47 @@
+# @package _global_
+
+defaults:
+  - /_base_/postprocessor@postprocess: standard
+  - _self_
+
+benchmark_root: ${oc.env:BENCHMARK_ROOT,./benchmark}
+work_root: ${oc.env:BENCHMARK_WORK_ROOT,./work}
+model_name: resnet18
+input_size: [224, 224]
+precision: int8
+work_dir: ${work_root}/${model_name}_${precision}
+input_hbm: ${work_dir}/hbr/model_output/${model_name}_${precision}.hbm
+validation_csv: ${benchmark_root}/dataset/ImageNet-1K/validation_1000.csv
+save_result: true
+
+validation_pipeline:
+  - _target_: edge_model_bench.dataset.transform.LoadingImage
+  - _target_: edge_model_bench.dataset.transform.BGR2RGB
+  - _target_: edge_model_bench.dataset.transform.Resize
+    size: ${input_size}
+  - _target_: edge_model_bench.dataset.transform.Normalize
+    mean: [0, 0, 0]
+    std: [255, 255, 255]
+  - _target_: edge_model_bench.dataset.transform.HWC2NCHW
+
+validation_dataset:
+  _target_: edge_model_bench.dataset.imagenet1k.ImageNet1K
+  csv_path: ${..validation_csv}
+  pipeline: ${..validation_pipeline}
+
+runner:
+  _target_: edge_model_bench.runner.hbr.HbrRunner
+  _partial_: true
+  priority: 0
+  bpu_cores: [0]
+
+evaluator:
+  _target_: edge_model_bench.evaluator.cls_task.ClsTaskEvaluator
+
+pipeline:
+  _target_: edge_model_bench.pipeline.model_evaluator.ModelEvaluator
+  model: ${input_hbm}
+  dataset: ${validation_dataset}
+  runner: ${runner}
+  postprocessor: ${postprocess.postprocessor}
+  evaluator: ${evaluator}

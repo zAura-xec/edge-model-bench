@@ -1,0 +1,19 @@
+# @package _global_
+#
+# QNN YOLO detection example (fp16): convert simplified ONNX, run COCO eval.
+# Requires boxes [1,4,N] + class_conf [1,C,N] simplified export.
+#
+#   uv run python tools/pipeline.py config/pipeline/task/det/qnn/fp16/yolov8n.yaml
+
+defaults:
+  - /pipeline/task/det/qnn/fp16/task
+  - _self_
+
+model_name: yolov8n
+input_size: [640, 640]
+num_classes: 80
+
+# simplified YOLOv8 export is pixel cxcywh (not xyxy)
+postprocess:
+  postprocessor:
+    box_format: cxcywh

@@ -1,0 +1,18 @@
+# @package _global_
+#
+# DETR-ResNet50 QNN int8 conversion only.
+# ONNX: ${benchmark_root}/onnx/det/detr_resnet50-onnx-float/detr_resnet50.onnx
+#
+#   uv run python tools/pipeline.py config/pipeline/conv/det/qnn/int8/detr_resnet50.yaml
+
+defaults:
+  - /pipeline/conv/det/qnn/int8/task
+  - _self_
+
+model_name: detr_resnet50
+
+calibration:
+  image_size: [640, 640]
+
+conversion:
+  input_model: ${benchmark_root}/onnx/det/detr_resnet50-onnx-float/detr_resnet50.onnx

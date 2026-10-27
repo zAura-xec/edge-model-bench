@@ -1,0 +1,30 @@
+# @package _global_
+
+defaults:
+  - /pipeline/conv/inst_seg/mtnn/task
+  - /_base_/dataset@calibration: standard_mtnn_npy
+  - _self_
+
+precision: int8
+
+calibration:
+  data_list: ${benchmark_root}/dataset/COCO2017/calibration_512.txt
+  raw_output_dir: ${work_dir}/npy
+  image_size: ${input_size}
+
+conversion:
+  mtnn_config:
+    # The split graph has four public outputs. MTC requires one '#' separated
+    # floating-point flag per output tensor.
+    force_fp32input_list: true
+    force_fp32output_list: true#true#true#true
+    quant_type: int8
+    quantizer: asymmetric_affine
+    quant_config:
+      algorithm: normal
+      iterations: 10
+    input_dataset_list:
+      - ${work_dir}/npy/calib_list.txt
+
+pipeline:
+  calibration_dataset: ${calibration.dataset}

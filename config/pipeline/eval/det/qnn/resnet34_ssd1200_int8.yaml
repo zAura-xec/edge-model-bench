@@ -1,0 +1,21 @@
+# @package _global_
+#
+#   uv run python tools/pipeline.py config/pipeline/eval/det/qnn/resnet34_ssd1200_int8.yaml
+
+defaults:
+  - /pipeline/eval/det/qnn/task
+  - override /_base_/postprocessor@postprocess: ssd
+  - _self_
+
+model_name: resnet34_ssd1200
+precision: int8
+input_size: [1200, 1200]
+num_classes: 80
+
+postprocess:
+  postprocessor:
+    input_size: ${input_size}
+    num_classes: ${num_classes}
+    conf_threshold: 0.05
+    max_detections: 100
+    map_coco_categories: false
